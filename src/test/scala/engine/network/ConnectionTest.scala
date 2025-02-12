@@ -31,6 +31,7 @@ class ConnectionTest extends AnyFunSuite:
     val toDMZ = ConnectionTest.sampleConnectionToDMZ
     val fromDMZ = toDMZ.invert
     assert(toDMZ != fromDMZ)
+    assert(fromDMZ.sourceZone == toDMZ.destinationZone)
     assert(fromDMZ.name == "DMZ to Intranet")
   }
 end ConnectionTest

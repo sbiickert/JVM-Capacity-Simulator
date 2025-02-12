@@ -20,3 +20,6 @@ object ZoneTest:
 
   val sampleIntranetZone: Zone =
     Zone("Intranet", "Secure Network", SECURED)
+    
+  val sampleAGOLZone: Zone =
+    Zone("AGOL", "ArcGIS Online", EDGE)
