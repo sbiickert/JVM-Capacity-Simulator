@@ -56,3 +56,27 @@ object WorkflowDefTest:
       )
 
     ))
+
+val sampleWorkstationWorkflowDef: WorkflowDef =
+  WorkflowDef("Workflow Def 002", "Sample Pro Work", 3, List(
+    List(sampleProWorkflowService, sampleDBMSWorkflowService),
+    List(
+      sampleProWorkflowService,
+      sampleWebWorkflowService,
+      samplePortalWorkflowService,
+      sampleCachedMapWorkflowService,
+      sampleFileWorkflowService
+    )
+  ))
+
+val sampleVDIWorkflowDef: WorkflowDef =
+  WorkflowDef("Workflow Def 003", "Sample VDI Pro Work", 3, List(
+    List(sampleVDIWorkflowService, sampleProWorkflowService, sampleDBMSWorkflowService),
+    List(
+      sampleProWorkflowService,
+      sampleWebWorkflowService,
+      samplePortalWorkflowService,
+      sampleCachedMapWorkflowService,
+      sampleFileWorkflowService
+    )
+  ))

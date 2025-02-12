@@ -40,7 +40,7 @@ class RouteTest extends AnyFunSuite:
     assert(route4.get == Route(List(
       agol.selfConnect(),
       agol.connect(internet, 1000, 10),
-      internet.connect(dmz, 100, 10),
+      internet.connect(dmz, 500, 10),
       dmz.connect(intranet, 1000, 0),
       intranet.connect(wan, 300, 7)
     )))

@@ -12,6 +12,19 @@ sealed trait Workflow extends Described:
   val workflowDef: WorkflowDef
   val zone: Zone
   val serviceProviders: Set[ServiceProvider]
+  
+  def missingServiceProviders: List[String] =
+    val allRequired = workflowDef.allRequiredServiceTypes
+    val configured = serviceProviders.map(sp => sp.service.serviceType).toSet
+    (allRequired -- configured).toList
+    
+  def createClientRequests(clock:Int): (ClientRequestGroup, List[ClientRequest]) =
+    val group = ClientRequestGroup(clock, this)
+    val requests = workflowDef.parallelServices.map(serv => {
+      ClientRequest(ClientRequest.nextName, "", clock, solution, metrics, group.id, false)
+    })
+    (group, requests)
+    
 
 case class UserWorkflow(name:String, description:String,
                         workflowDef: WorkflowDef, zone: Zone,

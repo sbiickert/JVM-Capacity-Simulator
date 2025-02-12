@@ -1,6 +1,8 @@
 package ca.esri.capsim
 package engine.compute
 
-enum BalancingModel:
-  case SINGLE, ROUNDROBIN, FAILOVER
+enum BalancingModel(t:String):
+  case SINGLE extends BalancingModel("1")
+  case ROUNDROBIN extends BalancingModel("ROUNDROBIN")
+  case FAILOVER extends BalancingModel("FAILOVER")
   

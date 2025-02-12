@@ -19,6 +19,11 @@ case class WorkflowDef(name: String, description: String,
       .map(i => parallelServices(i))
       .toList
     this.copy(parallelServices = chains)
+  
+  def allRequiredServiceTypes: Set[String] = 
+    parallelServices.flatMap(chain => {chain.map(ws => {ws.serviceType})})
+      .toSet
+
 
 end WorkflowDef
 

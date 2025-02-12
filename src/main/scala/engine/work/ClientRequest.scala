@@ -7,6 +7,14 @@ import java.util.UUID
 
 case class ClientRequest(name: String, description: String, requestClock: Int,
                          solution: ClientRequestSolution, metrics: ClientRequestMetrics,
-                         groupID: Option[UUID] = None,
+                         groupID: Int,
                          isFinished: Boolean = false) extends Described:
 end ClientRequest
+
+object ClientRequest:
+  private var _nextID:Int = 0
+  def nextID:Int =
+    _nextID += 1
+    nextID
+    
+  def nextName:String = s"CR-$nextID"

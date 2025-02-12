@@ -41,3 +41,19 @@ object ServiceProviderTest:
     val ds1 = vm.copy(name = "DS 001")
     val ds2 = vm.copy(name = "DS 002")
     ServiceProvider("Relational DS", "HA DataStore", ServiceTest.sampleService("relational"), None, Set(ds1, ds2))
+    
+  val sampleFileServiceProvider: ServiceProvider =
+    val fs = vm.copy(name = "File 001")
+    ServiceProvider("File Server", "File Server", ServiceTest.sampleService("file"), Some(fs), Set(fs))
+
+  val sampleVDIServiceProvider: ServiceProvider =
+    val vdi = vm.copy(name = "Citrix 001")
+    ServiceProvider("VDI", "Citrix Server", ServiceTest.sampleService("vdi"), Some(vdi), Set(vdi))
+
+
+  val sampleBrowserServiceProvider: ServiceProvider =
+    val client = ComputeNodeTest.sampleClient
+    ServiceProvider("Chrome", "PC Workstation", ServiceTest.sampleService("browser"), Some(client), Set(client))
+  val sampleProServiceProvider: ServiceProvider =
+    val client = ComputeNodeTest.sampleClient
+    ServiceProvider("Pro", "PC Workstation", ServiceTest.sampleService("pro"), Some(client), Set(client))
