@@ -28,8 +28,12 @@ case class Zone(val name:String, val description:String,
 
   // Computed properties. Pass in lists of all Clients/ComputeNodes/Workflows
   // to return the ones assoc. with this Zone
-  def clients(inClients: List[Client]): List[Client] =
-    inClients.filter(client => {client.zone == this})
+  def clients(inComputeNodes: List[ComputeNode]): List[Client] =
+    inComputeNodes.filter(node => {
+      node match
+        case client: Client => client.zone == this
+        case _ => false
+    }).map(_.asInstanceOf[Client])
 
   def servers(inComputeNodes: List[ComputeNode]): List[ComputeNode] =
     inComputeNodes.filter(node => {

@@ -6,7 +6,7 @@ import ca.esri.capsim.engine.Described
 import java.util.UUID
 
 case class ClientRequest(name: String, description: String, requestClock: Int,
-                         solution: ClientRequestSolution, metrics: ClientRequestMetrics,
+                         solution: ClientRequestSolution,
                          groupID: Int,
                          isFinished: Boolean = false) extends Described:
 end ClientRequest

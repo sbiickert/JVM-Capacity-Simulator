@@ -33,17 +33,7 @@ case class Connection(val sourceZone:Zone, val destinationZone:Zone,
 end Connection
 
 object Connection:
-  private var _allConnections = Set[Connection]()
-
-  def registerConnection(conn: Connection): Set[Connection] =
-    _allConnections = _allConnections + conn
-    _allConnections
-
-  def removeConnection(conn: Connection): Set[Connection] =
-    _allConnections = _allConnections - conn
-    _allConnections
-
-  def allConnections: Set[Connection] = _allConnections
+  
 end Connection
 
 

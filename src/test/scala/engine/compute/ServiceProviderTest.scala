@@ -57,3 +57,8 @@ object ServiceProviderTest:
   val sampleProServiceProvider: ServiceProvider =
     val client = ComputeNodeTest.sampleClient
     ServiceProvider("Pro", "PC Workstation", ServiceTest.sampleService("pro"), Some(client), Set(client))
+    
+  val sampleWebGISServiceProviders: Set[ServiceProvider] =
+    Set(sampleBrowserServiceProvider, sampleProServiceProvider, sampleVDIServiceProvider,
+      sampleFileServiceProvider, sampleHADataStoreServiceProvider, sampleDBMSServiceProvider,
+      sampleMapServiceProvider, samplePortalServiceProvider, sampleWebServiceProvider)

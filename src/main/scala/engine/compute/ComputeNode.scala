@@ -8,15 +8,16 @@ import ca.esri.capsim.engine.network.Zone
 import ca.esri.capsim.engine.queue.WaitMode.WAITING
 import ca.esri.capsim.engine.work.ClientRequest
 
-sealed trait ComputeNode:
+sealed trait ComputeNode extends ServiceTimeCalculator:
   val hardwareDef: HardwareDef
+  val zone: Zone
 
 
 
 case class Client(val name: String, val description: String,
                   val hardwareDef: HardwareDef,
                   val zone: Zone)
-  extends ComputeNode, Described, QueueProvider, ServiceTimeCalculator:
+  extends ComputeNode, Described, QueueProvider:
 
   override def calculateServiceTime(request: ClientRequest): Int = ???
   override def calculateLatency(request: ClientRequest): Int = ???
@@ -30,7 +31,7 @@ end Client
 case class PhysicalHost(val name: String, val description: String,
                         val hardwareDef: HardwareDef,
                         val zone: Zone, val virtualHosts: List[VirtualHost])
-  extends ComputeNode, Described, QueueProvider, ServiceTimeCalculator:
+  extends ComputeNode, Described, QueueProvider:
 
   def addVHost(vCPUs: Int, memoryGB: Int, threadingModel: ThreadingModel): PhysicalHost =
     val vHost = VirtualHost(name = (s"VH $name:" + virtualHosts.length), description = "",
@@ -57,7 +58,7 @@ case class VirtualHost(val name: String, val description: String,
                        val hardwareDef: HardwareDef,
                        val zone: Zone,
                        val vCPUs:Int, val memoryGB:Int, val threadingModel:ThreadingModel)
-  extends ComputeNode, Described, QueueProvider, ServiceTimeCalculator:
+  extends ComputeNode, Described, QueueProvider:
 
   override def calculateServiceTime(request: ClientRequest): Int = ???
   override def calculateLatency(request: ClientRequest): Int = ???

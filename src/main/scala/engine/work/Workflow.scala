@@ -4,7 +4,9 @@ package engine.work
 import engine.Described
 
 import ca.esri.capsim.engine.compute.ServiceProvider
-import ca.esri.capsim.engine.network.Zone
+import ca.esri.capsim.engine.network.{Connection, Zone}
+
+import java.util.Dictionary
 
 sealed trait Workflow extends Described:
   override val name: String
@@ -18,10 +20,11 @@ sealed trait Workflow extends Described:
     val configured = serviceProviders.map(sp => sp.service.serviceType).toSet
     (allRequired -- configured).toList
     
-  def createClientRequests(clock:Int): (ClientRequestGroup, List[ClientRequest]) =
+  def createClientRequests(network:List[Connection], clock:Int): (ClientRequestGroup, List[ClientRequest]) =
     val group = ClientRequestGroup(clock, this)
-    val requests = workflowDef.parallelServices.map(serv => {
-      ClientRequest(ClientRequest.nextName, "", clock, solution, metrics, group.id, false)
+    val requests = workflowDef.parallelServices.map(chain => {
+      val solution = ClientRequestSolution.create(chain, serviceProviders, network)
+      ClientRequest(ClientRequest.nextName, "", clock, solution, group.id, false)
     })
     (group, requests)
     

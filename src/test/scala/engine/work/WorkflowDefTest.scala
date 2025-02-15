@@ -3,7 +3,7 @@ package engine.work
 
 import ca.esri.capsim.engine.work.WorkflowServiceTest.*
 import ca.esri.capsim.engine.work.WorkflowChain
-import ca.esri.capsim.engine.work.WorkflowDefTest.sampleWebWorkflowDef
+import ca.esri.capsim.engine.work.WorkflowDefTest.{sampleProBasemap, sampleProMapChain, sampleWebWorkflowDef}
 import org.scalatest.funsuite.AnyFunSuite
 
 class WorkflowDefTest extends AnyFunSuite:
@@ -38,28 +38,28 @@ class WorkflowDefTest extends AnyFunSuite:
   }
 
 object WorkflowDefTest:
-  val sampleWebWorkflowDef: WorkflowDef =
-    WorkflowDef("Workflow Def 001", "Sample Web Map", 3, List(
-      List(
-        sampleBrowserWorkflowService,
-        sampleWebWorkflowService,
-        samplePortalWorkflowService,
-        sampleDynMapWorkflowService,
-        sampleDBMSWorkflowService
-      ),
-      List(
-        sampleBrowserWorkflowService,
-        sampleWebWorkflowService,
-        samplePortalWorkflowService,
-        sampleCachedMapWorkflowService,
-        sampleFileWorkflowService
-      )
-
-    ))
-
-val sampleWorkstationWorkflowDef: WorkflowDef =
-  WorkflowDef("Workflow Def 002", "Sample Pro Work", 3, List(
-    List(sampleProWorkflowService, sampleDBMSWorkflowService),
+  val sampleWebDynamicMapChain: WorkflowChain =
+    List(
+      sampleBrowserWorkflowService,
+      sampleWebWorkflowService,
+      samplePortalWorkflowService,
+      sampleDynMapWorkflowService,
+      sampleDBMSWorkflowService
+    )
+    
+  val sampleWebCachedMapChain: WorkflowChain =
+    List(
+      sampleBrowserWorkflowService,
+      sampleWebWorkflowService,
+      samplePortalWorkflowService,
+      sampleCachedMapWorkflowService,
+      sampleFileWorkflowService
+    )
+    
+  val sampleProMapChain: WorkflowChain =
+    List(sampleProWorkflowService, sampleDBMSWorkflowService)
+    
+  val sampleProBasemap: WorkflowChain =
     List(
       sampleProWorkflowService,
       sampleWebWorkflowService,
@@ -67,16 +67,16 @@ val sampleWorkstationWorkflowDef: WorkflowDef =
       sampleCachedMapWorkflowService,
       sampleFileWorkflowService
     )
-  ))
+    
+  val sampleWebWorkflowDef: WorkflowDef =
+    WorkflowDef("Workflow Def 001", "Sample Web Map", 3, List(
+      sampleWebDynamicMapChain, sampleWebCachedMapChain ))
+
+val sampleWorkstationWorkflowDef: WorkflowDef =
+  WorkflowDef("Workflow Def 002", "Sample Pro Work", 3, List(
+    sampleProMapChain, sampleProBasemap ))
 
 val sampleVDIWorkflowDef: WorkflowDef =
   WorkflowDef("Workflow Def 003", "Sample VDI Pro Work", 3, List(
     List(sampleVDIWorkflowService, sampleProWorkflowService, sampleDBMSWorkflowService),
-    List(
-      sampleProWorkflowService,
-      sampleWebWorkflowService,
-      samplePortalWorkflowService,
-      sampleCachedMapWorkflowService,
-      sampleFileWorkflowService
-    )
-  ))
+    sampleProBasemap ))
