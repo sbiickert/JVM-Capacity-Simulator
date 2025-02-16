@@ -1,12 +1,11 @@
 package ca.esri.capsim
 package engine.compute
 
+import engine.Described
+import engine.network.Zone
+import engine.queue.WaitMode.*
 import engine.queue.{MultiQueue, QueueProvider, ServiceTimeCalculator}
-
-import ca.esri.capsim.engine.Described
-import ca.esri.capsim.engine.network.Zone
-import ca.esri.capsim.engine.queue.WaitMode.WAITING
-import ca.esri.capsim.engine.work.ClientRequest
+import engine.work.ClientRequest
 
 sealed trait ComputeNode extends ServiceTimeCalculator:
   val hardwareDef: HardwareDef
@@ -14,27 +13,27 @@ sealed trait ComputeNode extends ServiceTimeCalculator:
 
 
 
-case class Client(val name: String, val description: String,
-                  val hardwareDef: HardwareDef,
-                  val zone: Zone)
+case class Client(name: String, description: String,
+                  hardwareDef: HardwareDef,
+                  zone: Zone)
   extends ComputeNode, Described, QueueProvider:
 
   override def calculateServiceTime(request: ClientRequest): Int = ???
   override def calculateLatency(request: ClientRequest): Int = ???
 
   override def provideQueue(): MultiQueue =
-    MultiQueue(serviceTimeCalculator = this, waitMode = WAITING, channelCount = hardwareDef.cores)
+    MultiQueue(serviceTimeCalculator = this, waitMode = PROCESSING, channelCount = hardwareDef.cores)
 end Client
 
 
 
-case class PhysicalHost(val name: String, val description: String,
-                        val hardwareDef: HardwareDef,
-                        val zone: Zone, val virtualHosts: List[VirtualHost])
+case class PhysicalHost(name: String, description: String,
+                        hardwareDef: HardwareDef,
+                        zone: Zone, virtualHosts: List[VirtualHost])
   extends ComputeNode, Described, QueueProvider:
 
   def addVHost(vCPUs: Int, memoryGB: Int, threadingModel: ThreadingModel): PhysicalHost =
-    val vHost = VirtualHost(name = (s"VH $name:" + virtualHosts.length), description = "",
+    val vHost = VirtualHost(name = s"VH $name:" + virtualHosts.length, description = "",
       hardwareDef = hardwareDef, zone = zone,
       vCPUs = vCPUs, memoryGB = memoryGB, threadingModel = threadingModel)
     val list = vHost +: virtualHosts
@@ -48,22 +47,22 @@ case class PhysicalHost(val name: String, val description: String,
   override def calculateLatency(request: ClientRequest): Int = ???
 
   override def provideQueue(): MultiQueue =
-    MultiQueue(serviceTimeCalculator = this, waitMode = WAITING, channelCount = hardwareDef.cores)
+    MultiQueue(serviceTimeCalculator = this, waitMode = PROCESSING, channelCount = hardwareDef.cores)
 
 end PhysicalHost
 
 
 
-case class VirtualHost(val name: String, val description: String,
-                       val hardwareDef: HardwareDef,
-                       val zone: Zone,
-                       val vCPUs:Int, val memoryGB:Int, val threadingModel:ThreadingModel)
+case class VirtualHost(name: String, description: String,
+                       hardwareDef: HardwareDef,
+                       zone: Zone,
+                       vCPUs:Int, memoryGB:Int, threadingModel:ThreadingModel)
   extends ComputeNode, Described, QueueProvider:
 
   override def calculateServiceTime(request: ClientRequest): Int = ???
   override def calculateLatency(request: ClientRequest): Int = ???
 
   override def provideQueue(): MultiQueue =
-    MultiQueue(serviceTimeCalculator = this, waitMode = WAITING, channelCount = hardwareDef.cores)
+    MultiQueue(serviceTimeCalculator = this, waitMode = PROCESSING, channelCount = hardwareDef.cores)
 
 end VirtualHost

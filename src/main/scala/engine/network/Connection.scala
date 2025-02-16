@@ -4,7 +4,7 @@ package engine.network
 import engine.Described
 
 import ca.esri.capsim.engine.compute.ServiceProvider
-import ca.esri.capsim.engine.queue.WaitMode.WAITING
+import ca.esri.capsim.engine.queue.WaitMode.{TRANSMITTING, QUEUEING}
 import ca.esri.capsim.engine.queue.{MultiQueue, QueueProvider, ServiceTimeCalculator}
 import ca.esri.capsim.engine.work.ClientRequest
 
@@ -28,7 +28,7 @@ case class Connection(val sourceZone:Zone, val destinationZone:Zone,
   override def calculateLatency(request: ClientRequest): Int = ???
 
   override def provideQueue(): MultiQueue =
-    MultiQueue(serviceTimeCalculator = this, waitMode = WAITING, channelCount = 2)
+    MultiQueue(serviceTimeCalculator = this, waitMode = TRANSMITTING, channelCount = 2)
 
 end Connection
 
