@@ -13,7 +13,7 @@ class MultiQueue(val serviceTimeCalculator: ServiceTimeCalculator,
   private val channels = mutable.ArrayBuffer[Option[WaitingRequest]]()
   private val mainQueue = mutable.Queue[WaitingRequest]()
 
-  private def availableChannelCount:Int =
+  def availableChannelCount:Int =
     // First check that the channels are initialized
     while channels.length < channelCount do
       channels.addOne(None)
@@ -53,7 +53,10 @@ class MultiQueue(val serviceTimeCalculator: ServiceTimeCalculator,
     val finishedRequests = mutable.ArrayBuffer[ClientRequest]()
     finishedIndexes.foreach(i => {
       finishedRequests.addOne(channels(i).get.request)
-      channels(i) = None
+      if mainQueue.isEmpty then
+        channels(i) = None
+      else
+        channels(i) = Some(mainQueue.dequeue())
     })
     finishedRequests.toList
 

@@ -24,9 +24,9 @@ case class Connection(sourceZone:Zone, destinationZone:Zone,
 
   override def calculateServiceTime(request: ClientRequest): Int =
     val dataKb = request.solution.currentStep.dataSize * 8
-    val bwKbps = bandwidth * 1000 
-    dataKb / bwKbps
-    
+    val bwKbpms = bandwidth * 1000 / 1000 // Mbps -> kbps -> kb per millisecond (which is the time scale of the simulation)
+    dataKb / bwKbpms
+
   override def calculateLatency(request: ClientRequest): Int =
     request.solution.currentStep.chatter * latency
 

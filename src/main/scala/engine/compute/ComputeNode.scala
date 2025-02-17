@@ -12,7 +12,8 @@ sealed trait ComputeNode extends ServiceTimeCalculator:
   val zone: Zone
 
   private def adjustedServiceTime(serviceTime:Int):Int =
-    serviceTime * (HardwareDef.BASELINE_SPEC_INT_RATE_2017 / hardwareDef.specIntRate2017)
+    val relative = HardwareDef.BASELINE_PER_CORE_SPEC_INT_RATE_2017 / hardwareDef.specIntRate2017PerCore
+    (serviceTime * relative).toInt
 
   override def calculateServiceTime(request: ClientRequest): Int =
     adjustedServiceTime(request.solution.currentStep.serviceTime)

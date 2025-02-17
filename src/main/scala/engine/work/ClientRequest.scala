@@ -15,6 +15,7 @@ object ClientRequest:
   private var _nextID:Int = 0
   def nextID:Int =
     _nextID += 1
-    nextID
+    _nextID
     
-  def nextName:String = s"CR-$nextID"
+  def nextName:String =
+    s"CR-$nextID"
