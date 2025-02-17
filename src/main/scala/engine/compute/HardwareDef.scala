@@ -9,5 +9,6 @@ case class HardwareDef(name: String, description:String,
 end HardwareDef
 
 object HardwareDef:
-  
+  val BASELINE_SPEC_INT_RATE_2017:Int = 10
+
 end HardwareDef

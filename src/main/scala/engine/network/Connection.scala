@@ -2,14 +2,12 @@ package ca.esri.capsim
 package engine.network
 
 import engine.Described
+import engine.queue.WaitMode.TRANSMITTING
+import engine.queue.{MultiQueue, QueueProvider, ServiceTimeCalculator}
+import engine.work.ClientRequest
 
-import ca.esri.capsim.engine.compute.ServiceProvider
-import ca.esri.capsim.engine.queue.WaitMode.{TRANSMITTING, QUEUEING}
-import ca.esri.capsim.engine.queue.{MultiQueue, QueueProvider, ServiceTimeCalculator}
-import ca.esri.capsim.engine.work.ClientRequest
-
-case class Connection(val sourceZone:Zone, val destinationZone:Zone,
-                 val bandwidth:Int, val latency: Int)
+case class Connection(sourceZone:Zone, destinationZone:Zone,
+                      bandwidth:Int, latency: Int)
   extends Described, ServiceTimeCalculator, QueueProvider:
   
   val name: String =
@@ -24,8 +22,13 @@ case class Connection(val sourceZone:Zone, val destinationZone:Zone,
   def invert: Connection =
     Connection(destinationZone, sourceZone, bandwidth, latency)
 
-  override def calculateServiceTime(request: ClientRequest): Int = ???
-  override def calculateLatency(request: ClientRequest): Int = ???
+  override def calculateServiceTime(request: ClientRequest): Int =
+    val dataKb = request.solution.currentStep.dataSize * 8
+    val bwKbps = bandwidth * 1000 
+    dataKb / bwKbps
+    
+  override def calculateLatency(request: ClientRequest): Int =
+    request.solution.currentStep.chatter * latency
 
   override def provideQueue(): MultiQueue =
     MultiQueue(serviceTimeCalculator = this, waitMode = TRANSMITTING, channelCount = 2)

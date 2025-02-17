@@ -21,7 +21,9 @@ object ClientRequestSolution:
     var sourceSP = serviceProviders.find(_.service.serviceType == chain.head.serviceType).get
     var sourceNode = sourceSP.handlerNode()
     var steps = List[ClientRequestSolutionStep](ClientRequestSolutionStep(
-      serviceTimeCalculator = sourceNode, isResponse = false, dataSize = chain.head.requestSizeKB))
+      serviceTimeCalculator = sourceNode, isResponse = false,
+      dataSize = chain.head.requestSizeKB, chatter = 0, // Zero chatter for compute nodes
+      serviceTime = chain.head.serviceTime))
 
     for i <- 1 until chain.length do
       val destSP = serviceProviders.find(_.service.serviceType == chain(i).serviceType).get
@@ -30,11 +32,13 @@ object ClientRequestSolution:
         conn.sourceZone == sourceNode.zone && conn.destinationZone == destNode.zone
       }).get
       steps = ClientRequestSolutionStep(
-        serviceTimeCalculator = conn, isResponse = false, dataSize = chain(i).requestSizeKB
-      ) +: steps
+        serviceTimeCalculator = conn, isResponse = false,
+        dataSize = chain(i).requestSizeKB, chatter = chain(i).chatter,
+        serviceTime = 0) +: steps   // Service time is derived from data size for connection nodes
       steps = ClientRequestSolutionStep(
-        serviceTimeCalculator = destNode, isResponse = false, dataSize = chain(i).requestSizeKB
-      ) +: steps
+        serviceTimeCalculator = destNode, isResponse = false,
+        dataSize = chain(i).requestSizeKB, chatter = 0, // Zero chatter for compute nodes
+        serviceTime = chain(i).serviceTime) +: steps 
       sourceSP = destSP
       sourceNode = destNode
 
@@ -47,11 +51,13 @@ object ClientRequestSolution:
         conn.sourceZone == sourceNode.zone && conn.destinationZone == destNode.zone
       }).get
       steps = ClientRequestSolutionStep(
-        serviceTimeCalculator = conn, isResponse = true, dataSize = chainR(i).responseSizeKB
-      ) +: steps
+        serviceTimeCalculator = conn, isResponse = true,
+        dataSize = chainR(i).responseSizeKB, chatter = chainR(i).chatter,
+        serviceTime = 0) +: steps
       steps = ClientRequestSolutionStep(
-        serviceTimeCalculator = destNode, isResponse = true, dataSize = chainR(i).responseSizeKB
-      ) +: steps
+        serviceTimeCalculator = destNode, isResponse = true,
+        dataSize = chainR(i).responseSizeKB, chatter = 0,
+        serviceTime = chainR(i).serviceTime) +: steps
       sourceSP = destSP
       sourceNode = destNode
 

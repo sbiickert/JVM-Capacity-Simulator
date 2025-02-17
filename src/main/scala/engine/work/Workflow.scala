@@ -2,11 +2,8 @@ package ca.esri.capsim
 package engine.work
 
 import engine.Described
-
-import ca.esri.capsim.engine.compute.ServiceProvider
-import ca.esri.capsim.engine.network.{Connection, Zone}
-
-import java.util.Dictionary
+import engine.compute.ServiceProvider
+import engine.network.{Connection, Zone}
 
 sealed trait Workflow extends Described:
   override val name: String
