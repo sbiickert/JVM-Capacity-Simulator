@@ -47,6 +47,21 @@ case class PhysicalHost(name: String, description: String,
     val list = virtualHosts.filter(_ != virtualHost)
     this.copy(virtualHosts = list)
 
+  def migrateVHost(virtualHost: VirtualHost, toNewHost:PhysicalHost): (PhysicalHost, PhysicalHost) =
+    val updatedVMs = virtualHosts.filter(_ != virtualHost)
+    val updatedOtherVMs = 
+      if toNewHost.virtualHosts.contains(virtualHost) then
+        virtualHost +: toNewHost.virtualHosts
+      else
+        toNewHost.virtualHosts
+    (this.copy(virtualHosts = updatedVMs), toNewHost.copy(virtualHosts = updatedOtherVMs))
+    
+  def totalCPUAllocation: Int =
+    virtualHosts.map(vm => vm.vCPUs * vm.threadingModel.factor)
+      .sum
+      .round
+      .toInt
+    
   override def provideQueue(): MultiQueue =
     MultiQueue(serviceTimeCalculator = this, waitMode = PROCESSING, channelCount = hardwareDef.cores)
 

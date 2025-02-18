@@ -18,7 +18,7 @@ class MultiQueueTest extends AnyFunSuite:
   }
 
   test("networkEnqueue") {
-    val connQ = sampleConnectionQ
+    val connQ = sampleConnectionQ // Network connections have one (serial) channel
     connQ.enqueue(sampleConnectionCR, 13)
     assert(connQ.requestCount == 1)
     assert(connQ.availableChannelCount == 0)
@@ -36,7 +36,7 @@ class MultiQueueTest extends AnyFunSuite:
   }
 
   test("computeEnqueue") {
-    val compQ = sampleComputeQ
+    val compQ = sampleComputeQ // 4 vCore server
     compQ.enqueue(sampleComputeCR, 13)
     assert(compQ.requestCount == 1)
     assert(compQ.nextEventTime.contains(265)) // 13 + service time, which is 141 adjusted slower hardware
