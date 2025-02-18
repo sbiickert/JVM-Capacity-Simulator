@@ -43,7 +43,12 @@ case class Zone(val name:String, val description:String,
         case _ => false})
 
   def workflows(inWorkflows: List[Workflow]): List[Workflow] =
-    inWorkflows.filter(w => {w.zone == this})
+    inWorkflows.filter(w => {
+      val clientNodes = w.serviceProviders
+        .flatMap(_.nodes)
+        .filter(_.isInstanceOf[Client])
+      clientNodes.head.zone == this
+    })
 
 
 end Zone

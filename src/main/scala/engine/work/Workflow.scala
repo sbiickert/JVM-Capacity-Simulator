@@ -9,7 +9,6 @@ sealed trait Workflow extends Described:
   override val name: String
   override val description: String
   val workflowDef: WorkflowDef
-  val zone: Zone
   val serviceProviders: Set[ServiceProvider]
   
   def missingServiceProviders: List[String] =
@@ -27,14 +26,14 @@ sealed trait Workflow extends Described:
     
 
 case class UserWorkflow(name:String, description:String,
-                        workflowDef: WorkflowDef, zone: Zone,
+                        workflowDef: WorkflowDef,
                         serviceProviders: Set[ServiceProvider],
                         userCount: Int, productivity: Int) extends Workflow:
 
 end UserWorkflow
 
 case class TransactionalWorkflow(name:String, description:String,
-                                 workflowDef: WorkflowDef, zone: Zone,
+                                 workflowDef: WorkflowDef,
                                  serviceProviders: Set[ServiceProvider],
                                  tph: Int) extends Workflow:
 

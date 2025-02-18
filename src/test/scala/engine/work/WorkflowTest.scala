@@ -20,7 +20,6 @@ object WorkflowTest:
   val sampleWorkstationWorkflow: Workflow =
     UserWorkflow("Pro", "Local workstation",
       sampleWorkstationWorkflowDef,
-      ZoneTest.sampleIntranetZone,
       Set(sampleProServiceProvider,
         sampleWebServiceProvider,
         samplePortalServiceProvider,
@@ -32,7 +31,6 @@ object WorkflowTest:
   val sampleVDIWorkflow: Workflow =
     UserWorkflow("VDI", "VDI workstation",
       sampleVDIWorkflowDef,
-      ZoneTest.sampleIntranetZone,
       Set(sampleVDIServiceProvider,
         sampleProServiceProvider,
         sampleWebServiceProvider,
