@@ -7,7 +7,7 @@ import engine.queue.WaitMode.*
 import engine.queue.{MultiQueue, QueueProvider, ServiceTimeCalculator}
 import engine.work.ClientRequest
 
-sealed trait ComputeNode extends ServiceTimeCalculator:
+sealed trait ComputeNode extends Described, ServiceTimeCalculator:
   val hardwareDef: HardwareDef
   val zone: Zone
 
@@ -23,7 +23,7 @@ sealed trait ComputeNode extends ServiceTimeCalculator:
 case class Client(name: String, description: String,
                   hardwareDef: HardwareDef,
                   zone: Zone)
-  extends ComputeNode, Described, QueueProvider:
+  extends ComputeNode, QueueProvider:
 
   override def provideQueue(): MultiQueue =
     MultiQueue(serviceTimeCalculator = this, waitMode = PROCESSING, channelCount = hardwareDef.cores)
@@ -34,7 +34,7 @@ end Client
 case class PhysicalHost(name: String, description: String,
                         hardwareDef: HardwareDef,
                         zone: Zone, virtualHosts: List[VirtualHost])
-  extends ComputeNode, Described, QueueProvider:
+  extends ComputeNode, QueueProvider:
 
   def addVHost(vCPUs: Int, memoryGB: Int, threadingModel: ThreadingModel): PhysicalHost =
     val vHost = VirtualHost(name = s"VH $name:" + virtualHosts.length, description = "",
@@ -73,7 +73,7 @@ case class VirtualHost(name: String, description: String,
                        hardwareDef: HardwareDef,
                        zone: Zone,
                        vCPUs:Int, memoryGB:Int, threadingModel:ThreadingModel)
-  extends ComputeNode, Described, QueueProvider:
+  extends ComputeNode, QueueProvider:
 
   override def provideQueue(): MultiQueue =
     MultiQueue(serviceTimeCalculator = this, waitMode = PROCESSING, channelCount = hardwareDef.cores)
