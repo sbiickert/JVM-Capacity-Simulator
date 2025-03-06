@@ -67,16 +67,20 @@ object WorkflowDefTest:
       sampleCachedMapWorkflowService,
       sampleFileWorkflowService
     )
-    
+
   val sampleWebWorkflowDef: WorkflowDef =
-    WorkflowDef("Workflow Def 001", "Sample Web Map", 3, List(
+    WorkflowDef("Workflow Def 001", "Sample Web Map", 6, List(
       sampleWebDynamicMapChain, sampleWebCachedMapChain ))
 
-val sampleWorkstationWorkflowDef: WorkflowDef =
-  WorkflowDef("Workflow Def 002", "Sample Pro Work", 3, List(
-    sampleProMapChain, sampleProBasemap ))
+  val sampleMobileWorkflowDef: WorkflowDef =
+    WorkflowDef("Workflow Def 003", "Sample Mobile Map", 10, List(
+      sampleWebDynamicMapChain, sampleWebCachedMapChain ))
 
-val sampleVDIWorkflowDef: WorkflowDef =
-  WorkflowDef("Workflow Def 003", "Sample VDI Pro Work", 3, List(
-    List(sampleVDIWorkflowService, sampleProWorkflowService, sampleDBMSWorkflowService),
-    sampleProBasemap ))
+  val sampleWorkstationWorkflowDef: WorkflowDef =
+    WorkflowDef("Workflow Def 002", "Sample Pro Work", 3, List(
+      sampleProMapChain, sampleProBasemap ))
+
+  val sampleVDIWorkflowDef: WorkflowDef =
+    WorkflowDef("Workflow Def 003", "Sample VDI Pro Work", 3, List(
+      List(sampleVDIWorkflowService, sampleProWorkflowService, sampleDBMSWorkflowService),
+      sampleProBasemap ))

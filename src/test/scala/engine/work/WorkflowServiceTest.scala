@@ -16,6 +16,8 @@ object WorkflowServiceTest:
     WorkflowService("Client Service 001", "Sample Pro Workflow Service", "pro", 831, 500, 1000, 13340, DBMS, 0)
   val sampleBrowserWorkflowService: WorkflowService =
     WorkflowService("Client Service 002", "Sample Web Browser Workflow Service", "browser", 20, 10, 100, 2134, NONE, 20)
+  val sampleMobileWorkflowService: WorkflowService =
+    WorkflowService("Client Service 003", "Sample Mobile Workflow Service", "mobile", 20, 10, 100, 2134, NONE, 20)
   val sampleVDIWorkflowService: WorkflowService =
     WorkflowService("VDI Service 001", "Sample VDI Workflow Service", "vdi", 831, 10, 100, 3691, DBMS, 0)
 

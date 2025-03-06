@@ -4,9 +4,11 @@ package engine
 import ca.esri.capsim.engine.Design.updateWorkflowsWithUpdatedServiceProviders
 import ca.esri.capsim.engine.compute.{Client, ComputeNode, PhysicalHost, Service, ServiceProvider, VirtualHost}
 import ca.esri.capsim.engine.network.*
+import ca.esri.capsim.engine.queue.MultiQueue
 import ca.esri.capsim.engine.work.{TransactionalWorkflow, UserWorkflow, Workflow}
 
 import java.util.UUID
+import scala.collection.View.Updated
 
 case class Design(name: String, description: String = "",
                   zones:List[Zone] = List(), 
@@ -16,6 +18,10 @@ case class Design(name: String, description: String = "",
                   serviceProviders:List[ServiceProvider] = List(),
                   workflows:List[Workflow] = List()) extends Described:
 
+  def isValid:Boolean =
+    //TODO
+    false
+    
   // ----------------------------------------------------------------
   // Zone Management
   // ----------------------------------------------------------------
@@ -91,6 +97,9 @@ case class Design(name: String, description: String = "",
       serviceProviders = updatedSPs,
       workflows = updatedWorkflows)
 
+  def getZone(name:String): Option[Zone] =
+    zones.find(_.name == name)
+    
   // ----------------------------------------------------------------
   // Network Management
   // ----------------------------------------------------------------
@@ -125,7 +134,7 @@ case class Design(name: String, description: String = "",
     this.copy(network = updatedNetwork)
 
   // ----------------------------------------------------------------
-  // Physical Host Management
+  // Physical Host/Client Management
   // ----------------------------------------------------------------
 
   /**
@@ -134,10 +143,16 @@ case class Design(name: String, description: String = "",
    * @return The modified Design
    */
   def addHost(host:PhysicalHost): Design =
-    if computeNodes.contains(host) then
+    addComputeNode(host)
+
+  def addClient(client:Client): Design =
+    addComputeNode(client)
+    
+  private def addComputeNode(node:ComputeNode): Design =
+    if computeNodes.contains(node) then
       this
     else
-      val updatedNodes = host +: computeNodes
+      val updatedNodes = node +: computeNodes
       this.copy(computeNodes = updatedNodes)
 
   /**
@@ -148,12 +163,17 @@ case class Design(name: String, description: String = "",
    * @return The modified Design
    */
   def removeHost(host:PhysicalHost): Design =
-    val updatedNodes = computeNodes.filter(node => {
-      node != host && !host.virtualHosts.contains(node)
-    })
+    val vHostsToRemove = computeNodes.filter(host.virtualHosts.contains(_))
+    removeComputeNode(host +: vHostsToRemove)
+    
+  def removeClient(client:Client): Design =
+    removeComputeNode(List(client))
+    
+  private def removeComputeNode(nodes: List[ComputeNode]): Design =
+    val updatedNodes = computeNodes.filterNot(nodes.contains(_))
     val updatedSPs = Design.updateServiceProvidersWithUpdatedNodes(serviceProviders, updatedNodes)
     val updatedWorkflows = updateWorkflowsWithUpdatedServiceProviders(workflows, updatedSPs)
-
+  
     this.copy(computeNodes = updatedNodes,
       serviceProviders = updatedSPs,
       workflows = updatedWorkflows)
@@ -178,7 +198,21 @@ case class Design(name: String, description: String = "",
     this.copy(computeNodes = updatedNodes,
       serviceProviders = updatedSPs,
       workflows = updatedWorkflows)
+    
+  def replaceClient(original: Client, updated: Client): Design =
+    val updatedNodes = computeNodes.filterNot(_ == original)
+      .appended(updated)
+    val updatedSPs = Design.updateServiceProvidersWithUpdatedNodes(serviceProviders, updatedNodes)
+    val updatedWorkflows = updateWorkflowsWithUpdatedServiceProviders(workflows, updatedSPs)
+  
+    this.copy(computeNodes = updatedNodes,
+      serviceProviders = updatedSPs,
+      workflows = updatedWorkflows)
 
+
+  def getComputeNode(name:String): Option[ComputeNode] =
+    computeNodes.find(_.name == name)
+    
   // ----------------------------------------------------------------
   // Service Management
   // ----------------------------------------------------------------
@@ -260,10 +294,12 @@ case class Design(name: String, description: String = "",
     val updatedWorkflows = updateWorkflowsWithUpdatedServiceProviders(workflows, updatedSPs)
     this.copy(serviceProviders = updatedSPs,
       workflows = updatedWorkflows)
+    
 
   // ----------------------------------------------------------------
   // Workflow Management
   // ----------------------------------------------------------------
+    
   /** Adds a new workflow to the design */
   def addWorkflow(wf:Workflow): Design =
     if workflows.contains(wf) then
@@ -290,6 +326,19 @@ case class Design(name: String, description: String = "",
   def replaceWorkflow(original:Workflow, updated:Workflow): Design =
     val updatedWorkflows = workflows.filter(_ != original).appended(updated)
     this.copy(workflows = updatedWorkflows)
+
+  // ----------------------------------------------------------------
+  // Queues
+  // ----------------------------------------------------------------
+  def provideQueues():List[MultiQueue] =
+    var queues = List[MultiQueue]()
+    for conn <- network do
+      queues = conn.provideQueue() +: queues
+
+    for host <- computeNodes do
+      queues = host.provideQueue() +: queues
+
+    queues
 
 end Design
 
