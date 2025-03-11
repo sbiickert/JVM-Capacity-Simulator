@@ -6,7 +6,7 @@ import engine.compute.ServiceProvider
 import ca.esri.capsim.engine.network.Connection
 
 case class ClientRequestSolution(steps: List[ClientRequestSolutionStep]):
-  def currentStep: ClientRequestSolutionStep = steps.head
+  def currentStep: Option[ClientRequestSolutionStep] = steps.headOption
   def gotoNextStep: ClientRequestSolution =
     this.copy(steps = steps.tail)
 

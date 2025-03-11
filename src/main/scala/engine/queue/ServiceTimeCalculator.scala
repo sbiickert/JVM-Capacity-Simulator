@@ -4,5 +4,5 @@ package engine.queue
 import engine.work.ClientRequest
 
 trait ServiceTimeCalculator:
-  def calculateServiceTime(request: ClientRequest): Int
-  def calculateLatency(request: ClientRequest): Int
+  def calculateServiceTime(request: ClientRequest): Option[Int]
+  def calculateLatency(request: ClientRequest): Option[Int]

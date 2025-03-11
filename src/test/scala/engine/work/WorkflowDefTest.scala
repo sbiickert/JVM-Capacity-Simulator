@@ -9,7 +9,7 @@ import org.scalatest.funsuite.AnyFunSuite
 class WorkflowDefTest extends AnyFunSuite:
   test("create") {
     val wf = sampleWebWorkflowDef
-    assert(wf.thinkTime == 3)
+    assert(wf.thinkTime == 6)
     assert(wf.parallelServices.length == 2)
     assert(wf.parallelServices(0)(3).serviceType == "map")
     assert(wf.parallelServices(1)(3).serviceType == "map")

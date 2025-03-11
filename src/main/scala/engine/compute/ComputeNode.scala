@@ -5,7 +5,7 @@ import engine.Described
 import engine.network.Zone
 import engine.queue.WaitMode.*
 import engine.queue.{MultiQueue, QueueProvider, ServiceTimeCalculator}
-import engine.work.ClientRequest
+import engine.work.{ClientRequest, ClientRequestSolutionStep}
 
 sealed trait ComputeNode extends Described, ServiceTimeCalculator:
   val hardwareDef: HardwareDef
@@ -17,10 +17,12 @@ sealed trait ComputeNode extends Described, ServiceTimeCalculator:
 
   def provideQueue(): MultiQueue
   
-  override def calculateServiceTime(request: ClientRequest): Int =
-    adjustedServiceTime(request.solution.currentStep.serviceTime)
+  override def calculateServiceTime(request: ClientRequest): Option[Int] =
+    request.solution.currentStep match
+      case step: Some[ClientRequestSolutionStep] => Some(adjustedServiceTime(step.get.serviceTime))
+      case _ => None
 
-  override def calculateLatency(request: ClientRequest): Int = 0
+  override def calculateLatency(request: ClientRequest): Option[Int] = None
 
 case class Client(name: String, description: String,
                   hardwareDef: HardwareDef,

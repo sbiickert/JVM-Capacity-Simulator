@@ -4,6 +4,9 @@ package engine.queue
 import engine.queue.WaitMode.QUEUEING
 import engine.work.ClientRequest
 
+import ca.esri.capsim.engine.network.Connection
+import ca.esri.capsim.engine.{Described, PerformanceMetric, QueueMetric, RequestMetric}
+
 import scala.collection.mutable
 
 class MultiQueue(val serviceTimeCalculator: ServiceTimeCalculator,
@@ -48,11 +51,14 @@ class MultiQueue(val serviceTimeCalculator: ServiceTimeCalculator,
     val processingRequests = channels.flatten
     processingRequests.map(_.waitEnd).min
 
-  def removeFinishedRequests(clock: Int): List[ClientRequest] =
+  def removeFinishedRequests(clock: Int): List[(ClientRequest, RequestMetric)] =
     val finishedIndexes = channelsWithFinishedRequests(clock)
-    val finishedRequests = mutable.ArrayBuffer[ClientRequest]()
+    val finishedRequests = mutable.ArrayBuffer[(ClientRequest, RequestMetric)]()
     finishedIndexes.foreach(i => {
-      finishedRequests.addOne(channels(i).get.request)
+      val wr = channels(i).get
+      finishedRequests.addOne(
+        wr.request,
+        RequestMetric(sourceName = name, clock = clock, serviceTime = , queueTime = ???, latencyTime = ???))
       if mainQueue.isEmpty then
         channels(i) = None
       else
@@ -61,6 +67,7 @@ class MultiQueue(val serviceTimeCalculator: ServiceTimeCalculator,
     finishedRequests.toList
 
   def enqueue(req:ClientRequest, clock:Int): Unit =
+    assert(req.solution.currentStep.nonEmpty)
     if availableChannelCount == 0 then
       mainQueue.enqueue(WaitingRequest.create(req, clock, None, None, QUEUEING))
     else
@@ -68,8 +75,14 @@ class MultiQueue(val serviceTimeCalculator: ServiceTimeCalculator,
       val idx = firstAvailableChannel.get
       val st = serviceTimeCalculator.calculateServiceTime(req)
       val lat = serviceTimeCalculator.calculateLatency(req)
-      val wr = WaitingRequest.create(req, clock, Some(st), Some(lat), waitMode)
+      val wr = WaitingRequest.create(req, clock, st, lat, waitMode)
       channels(idx) = Some(wr)
 
+  def allWaitingRequests: List[WaitingRequest] =
+    mainQueue.toList ++: channels.flatten.toList
+
+  private val name:String = serviceTimeCalculator.asInstanceOf[Described].name
+  def getPerformanceMetric(clock: Int): QueueMetric =
+    QueueMetric(sourceName = name, clock = clock, channelCount = channelCount, requestCount = allWaitingRequests.length)
 
 end MultiQueue
