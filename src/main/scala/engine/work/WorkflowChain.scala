@@ -24,3 +24,6 @@ case class WorkflowChain(steps: List[WorkflowDefStep], serviceProviders: Set[Ser
   def serviceProvider(index:Int): ServiceProvider =
     assert(index >= 0 && index < steps.size)
     serviceProviders.find(_.service.serviceType == steps(index).serviceType).get
+    
+  def serviceProvider(step: WorkflowDefStep): ServiceProvider =
+    serviceProviders.find(_.service.serviceType == step.serviceType).get

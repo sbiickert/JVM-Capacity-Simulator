@@ -27,7 +27,7 @@ object ClientRequestSolution:
     for i <- 1 until chain.steps.length do
       val destSP = chain.serviceProvider(i)
       val destNode = destSP.handlerNode()
-      println(s"Finding connection between $sourceNode.zone} and $destNode.zone}")
+      //println(s"Finding connection between $sourceNode.zone} and $destNode.zone}")
       val route = Route.findRoute(sourceNode.zone, destNode.zone, network)
       assert(route.nonEmpty)
       route.get.connections.foreach(connection => {
@@ -46,7 +46,7 @@ object ClientRequestSolution:
     // Now, retrace our steps back to the client
     val chainStepsR = chain.steps.reverse
     for i <- 1 until chainStepsR.length do
-      val destSP = serviceProviders.find(_.service.serviceType == chainStepsR(i).serviceType).get
+      val destSP = chain.serviceProvider(chainStepsR(i))
       val destNode = destSP.handlerNode()
       val route = Route.findRoute(sourceNode.zone, destNode.zone, network)
       assert(route.nonEmpty)
@@ -63,5 +63,5 @@ object ClientRequestSolution:
       sourceSP = destSP
       sourceNode = destNode
 
-    ClientRequestSolution(steps)
+    ClientRequestSolution(steps.reverse)
 
