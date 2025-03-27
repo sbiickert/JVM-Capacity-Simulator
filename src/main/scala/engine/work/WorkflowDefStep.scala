@@ -3,7 +3,7 @@ package engine.work
 
 import engine.Described
 
-case class WorkflowService(name: String, description: String,
+case class WorkflowDefStep(name: String, description: String,
                            serviceType:String,
                            serviceTime: Int,
                            chatter: Int,
@@ -12,4 +12,4 @@ case class WorkflowService(name: String, description: String,
                            dataSourceType:DataSourceType,
                            cachePercent:Int) extends Described:
 
-end WorkflowService
+end WorkflowDefStep

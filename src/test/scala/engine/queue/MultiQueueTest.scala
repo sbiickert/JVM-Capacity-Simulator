@@ -22,14 +22,15 @@ class MultiQueueTest extends AnyFunSuite:
     connQ.enqueue(sampleConnectionCR, 13)
     assert(connQ.requestCount == 1)
     assert(connQ.availableChannelCount == 0)
-    assert(connQ.nextEventTime.contains(173)) // 13 + service time, which is 2 MB over a 100 Mbps line
+    // 13 ms + 160 ms ST + 100 ms latency
+    assert(connQ.nextEventTime.contains(273))
 
     // Yes, I know it's the same request. Just looking at queueing
     connQ.enqueue(sampleConnectionCR, 15)
     connQ.enqueue(sampleConnectionCR, 16)
     assert(connQ.requestCount == 3)
 
-    val finished = connQ.removeFinishedRequests(173)
+    val finished = connQ.removeFinishedRequests(273)
     assert(finished.length == 1)
     assert(connQ.requestCount == 2)
     assert(connQ.availableChannelCount == 0)

@@ -39,9 +39,12 @@ object Route:
           findRouteDFS(exit.destinationZone, toZone,
             visited + exit.destinationZone,
             extendedPath, connections) })
-        .filter(result => {result.head.destinationZone == toZone})
+        .filter(result => {result.nonEmpty && result.head.destinationZone == toZone})
         .sortBy({_.length})
-      results.head
+      if results.isEmpty then
+        List.empty
+      else
+        results.head
 
 
 end Route

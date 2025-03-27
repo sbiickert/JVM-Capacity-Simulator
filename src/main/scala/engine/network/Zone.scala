@@ -24,7 +24,20 @@ case class Zone(val name:String, val description:String,
     connections(inConnections).find(_.isLocal)
 
   def exitConnections(inConnections: List[Connection]): List[Connection] =
-    connections(inConnections).filter(conn => {conn.destinationZone != this})
+    connections(inConnections).filter(conn => {
+      conn.sourceZone == this && conn.destinationZone != this
+    })
+
+  def entryConnections(inConnections: List[Connection]): List[Connection] =
+    connections(inConnections).filter(conn => {
+      conn.sourceZone != this && conn.destinationZone == this
+    })
+
+  def isConnected(inConnections: List[Connection]): Boolean =
+    localConnection(inConnections).nonEmpty
+      && exitConnections(inConnections).nonEmpty
+      && entryConnections(inConnections).nonEmpty
+
 
   // Computed properties. Pass in lists of all Clients/ComputeNodes/Workflows
   // to return the ones assoc. with this Zone
@@ -44,11 +57,12 @@ case class Zone(val name:String, val description:String,
 
   def workflows(inWorkflows: List[Workflow]): List[Workflow] =
     inWorkflows.filter(w => {
-      val clientNodes = w.serviceProviders
+      val clientNodes = w.defaultServiceProviders
         .flatMap(_.nodes)
         .filter(_.isInstanceOf[Client])
       clientNodes.head.zone == this
     })
+
 
 
 end Zone

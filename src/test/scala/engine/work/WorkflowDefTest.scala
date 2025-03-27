@@ -1,9 +1,9 @@
 package ca.esri.capsim
 package engine.work
 
-import ca.esri.capsim.engine.work.WorkflowServiceTest.*
-import ca.esri.capsim.engine.work.WorkflowChain
-import ca.esri.capsim.engine.work.WorkflowDefTest.{sampleProBasemap, sampleProMapChain, sampleWebWorkflowDef}
+import engine.work.WorkflowDefStepTest.*
+import engine.work.WorkflowDefTest.sampleWebWorkflowDef
+
 import org.scalatest.funsuite.AnyFunSuite
 
 class WorkflowDefTest extends AnyFunSuite:
@@ -11,62 +11,62 @@ class WorkflowDefTest extends AnyFunSuite:
     val wf = sampleWebWorkflowDef
     assert(wf.thinkTime == 6)
     assert(wf.parallelServices.length == 2)
-    assert(wf.parallelServices(0)(3).serviceType == "map")
-    assert(wf.parallelServices(1)(3).serviceType == "map")
-    assert(wf.parallelServices(0)(4).serviceType == "dbms")
+    assert(wf.parallelServices.head.steps(3).serviceType == "map")
+    assert(wf.parallelServices(1).steps(3).serviceType == "map")
+    assert(wf.parallelServices.head.steps(4).serviceType == "dbms")
   }
 
   test("addChain") {
     val original = sampleWebWorkflowDef
-    val overlay = List(
+    val overlay = WorkflowChain(steps = List(
       sampleBrowserWorkflowService,
       sampleWebWorkflowService,
       samplePortalWorkflowService,
       sampleHostedWorkflowService,
       sampleRelationalWorkflowService
-    )
+    ), serviceProviders = Set.empty)
     val withOverlay = original.addChain(overlay)
     assert(withOverlay.parallelServices.length == 3)
-    assert(withOverlay.parallelServices.head(4).serviceType == "relational")
+    assert(withOverlay.parallelServices.head.steps(4).serviceType == "relational")
   }
 
   test("removeChain") {
     val original = sampleWebWorkflowDef
     val justBasemap = original.removeChain(0)
     assert(justBasemap.parallelServices.length == 1)
-    assert(justBasemap.parallelServices.head(4).serviceType == "file")
+    assert(justBasemap.parallelServices.head.steps(4).serviceType == "file")
   }
 
 object WorkflowDefTest:
   val sampleWebDynamicMapChain: WorkflowChain =
-    List(
+    WorkflowChain(steps = List(
       sampleBrowserWorkflowService,
       sampleWebWorkflowService,
       samplePortalWorkflowService,
       sampleDynMapWorkflowService,
       sampleDBMSWorkflowService
-    )
+    ), serviceProviders = Set.empty)
     
   val sampleWebCachedMapChain: WorkflowChain =
-    List(
+    WorkflowChain(steps = List(
       sampleBrowserWorkflowService,
       sampleWebWorkflowService,
       samplePortalWorkflowService,
       sampleCachedMapWorkflowService,
       sampleFileWorkflowService
-    )
+    ), serviceProviders = Set.empty)
     
   val sampleProMapChain: WorkflowChain =
-    List(sampleProWorkflowService, sampleDBMSWorkflowService)
+    WorkflowChain(steps = List(sampleProWorkflowService, sampleDBMSWorkflowService), serviceProviders = Set.empty)
     
   val sampleProBasemap: WorkflowChain =
-    List(
+    WorkflowChain(steps = List(
       sampleProWorkflowService,
       sampleWebWorkflowService,
       samplePortalWorkflowService,
       sampleCachedMapWorkflowService,
       sampleFileWorkflowService
-    )
+    ), serviceProviders = Set.empty)
 
   val sampleWebWorkflowDef: WorkflowDef =
     WorkflowDef("Workflow Def 001", "Sample Web Map", 6, List(
@@ -82,5 +82,5 @@ object WorkflowDefTest:
 
   val sampleVDIWorkflowDef: WorkflowDef =
     WorkflowDef("Workflow Def 003", "Sample VDI Pro Work", 3, List(
-      List(sampleVDIWorkflowService, sampleProWorkflowService, sampleDBMSWorkflowService),
+      WorkflowChain(steps = List(sampleVDIWorkflowService, sampleProWorkflowService, sampleDBMSWorkflowService), serviceProviders = Set.empty),
       sampleProBasemap ))

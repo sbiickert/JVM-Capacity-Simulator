@@ -1,29 +1,29 @@
 package ca.esri.capsim
 package engine
 
-import engine.compute.ThreadingModel.HYPERTHREADED
 import engine.compute.*
+import engine.compute.ThreadingModel.HYPERTHREADED
 import engine.network.ZoneType.{EDGE, INTERNET, SECURED}
 import engine.network.{Connection, Zone}
 import engine.work.*
+import engine.work.WorkflowDefTest.{sampleMobileWorkflowDef, sampleWebWorkflowDef}
 
-import ca.esri.capsim.engine.work.WorkflowDefTest.{sampleMobileWorkflowDef, sampleWebWorkflowDef}
 import org.scalatest.funsuite.AnyFunSuite
 
 class DesignTest extends AnyFunSuite:
   test("updateWorkflowList") {
     val workflows = List(WorkflowTest.sampleVDIWorkflow, WorkflowTest.sampleWorkstationWorkflow)
-    val oldSPs = workflows.head.serviceProviders.toList
+    val oldSPs = workflows.head.defaultServiceProviders.toList
     val withRemoved = oldSPs.filterNot(_.name == "Pro")
     val updatedWithRemoved = Design.updateWorkflowsWithUpdatedServiceProviders(
       workflows = workflows, updatedSPs = withRemoved)
-    assert(updatedWithRemoved.forall(w => !w.serviceProviders.exists(_.name == "Pro")))
+    assert(updatedWithRemoved.forall(w => !w.defaultServiceProviders.exists(_.name == "Pro")))
     val withAltered = oldSPs.map(sp => {
       sp.copy(description = "Altered")
     })
     val updatedWithAltered = Design.updateWorkflowsWithUpdatedServiceProviders(
       workflows = workflows, updatedSPs = withAltered)
-    assert(updatedWithAltered.forall(w => w.serviceProviders.forall(_.description == "Altered")))
+    assert(updatedWithAltered.forall(w => w.defaultServiceProviders.forall(_.description == "Altered")))
   }
   test("updateServiceProviderList") {
     val serviceProviders = ServiceProviderTest.sampleWebGISServiceProviders
@@ -54,6 +54,10 @@ class DesignTest extends AnyFunSuite:
     assert(design.getZone("AGOL").get.exitConnections(design.network).head.bandwidth == 1000)
 
     assert(design.computeNodes.length == 7)
+
+    assert(design.serviceProviders.length == 13)
+
+    assert(design.isValid)
   }
 end DesignTest
 
@@ -114,48 +118,56 @@ object DesignTest:
     var spSet = Set[ServiceProvider]()
     val spBrowser = ServiceProvider("Web Browser", "Web Browser", d.services("browser"), Some(mobileClient), Set(mobileClient))
     d = d.addServiceProvider(spBrowser)
+    spSet = spSet + spBrowser
     val spPro = ServiceProvider("Pro", "PC Workstation", d.services("pro"), Some(localClient), Set(localClient))
     d = d.addServiceProvider(spPro)
     spSet = spSet + spPro
     val spWeb = ServiceProvider("IIS", "Web Server", d.services("web"), Some(localVHost1), Set(localVHost1))
     d = d.addServiceProvider(spWeb)
+    spSet = spSet + spWeb
     val spPortal = ServiceProvider("Portal", "Portal for ArcGIS", d.services("portal"), Some(localVHost1), Set(localVHost1))
     d = d.addServiceProvider(spPortal)
     spSet = spSet + spPortal
     val spGIS = ServiceProvider("GIS", "Map Server", d.services("map"), None, Set(localVHost2))
     d = d.addServiceProvider(spGIS)
     spSet = spSet + spGIS
-    val spDB = ServiceProvider("SQL", "Geodatabase", d.services("dbms"), None, Set(localVHost3))
+    val spDB = ServiceProvider("SQL", "Geodatabase", d.services("dbms"), Some(localVHost3), Set(localVHost3))
     d = d.addServiceProvider(spDB)
     spSet = spSet + spDB
-    val spFile = ServiceProvider("File", "File Server", d.services("file"), None, Set(localVHost2))
+    val spFile = ServiceProvider("File", "File Server", d.services("file"), Some(localVHost2), Set(localVHost2))
     d = d.addServiceProvider(spFile)
     spSet = spSet + spFile
 
-    val agoWeb = ServiceProvider("IIS", "Web Server", d.services("web"), None, Set(agolHost))
+    var spSetAGO = Set[ServiceProvider]()
+    spSetAGO = spSetAGO + spBrowser
+    val agoWeb = ServiceProvider("AGO Edge", "Web Server", d.services("web"), None, Set(agolHost))
     d = d.addServiceProvider(agoWeb)
-    spSet = spSet + agoWeb
-    val agoPortal = ServiceProvider("Portal", "Portal for ArcGIS", d.services("portal"), Some(agolHost), Set(agolHost))
+    spSetAGO = spSetAGO + agoWeb
+    val agoPortal = ServiceProvider("AGO Portal", "Portal for ArcGIS", d.services("portal"), Some(agolHost), Set(agolHost))
     d = d.addServiceProvider(agoPortal)
-    spSet = spSet + agoPortal
-    val agoGIS = ServiceProvider("GIS", "Feature Server", d.services("feature"), None, Set(agolHost))
+    spSetAGO = spSetAGO + agoPortal
+    val agoGIS = ServiceProvider("AGO GIS", "Feature Server", d.services("feature"), None, Set(agolHost))
     d = d.addServiceProvider(agoGIS)
-    spSet = spSet + agoGIS
-    val agoDB = ServiceProvider("SQL", "Hosted Datastore", d.services("dbms"), None, Set(agolHost))
+    spSetAGO = spSetAGO + agoGIS
+    val agoBaseMap = ServiceProvider("AGO Basemap", "Map Server", d.services("map"), None, Set(agolHost))
+    d = d.addServiceProvider(agoBaseMap)
+    spSetAGO = spSetAGO + agoBaseMap
+    val agoDB = ServiceProvider("AGO SQL", "Hosted Datastore", d.services("dbms"), Some(agolHost), Set(agolHost))
     d = d.addServiceProvider(agoDB)
-    spSet = spSet + agoDB
-    val agoFile = ServiceProvider("File", "File Server", d.services("file"), None, Set(agolHost))
+    spSetAGO = spSetAGO + agoDB
+    val agoFile = ServiceProvider("AGO File", "File Server", d.services("file"), Some(agolHost), Set(agolHost))
     d = d.addServiceProvider(agoFile)
-    spSet = spSet + agoFile
+    spSetAGO = spSetAGO + agoFile
 
     // Workflow Definitions
-    val webWF = TransactionalWorkflow("Web", "Web Application",
-      sampleWebWorkflowDef, spSet, 1000)
+    var webWF = TransactionalWorkflow("Web", "Web Application",
+      sampleWebWorkflowDef, spSet, 1000).applyDefaultServiceProviders
+      webWF = webWF.updateServiceProviders(1, spSetAGO) // dynamic map from on prem, basemap from AGO
     d = d.addWorkflow(webWF)
     
     // Workflows
     val mobileMapWF = UserWorkflow("Field Maps", "Mobile Data Collection",
-      sampleMobileWorkflowDef, spSet, userCount = 15, productivity = 6)
+      sampleMobileWorkflowDef, spSetAGO, userCount = 15, productivity = 6).applyDefaultServiceProviders
     d = d.addWorkflow(mobileMapWF)
     
 //    println(d)

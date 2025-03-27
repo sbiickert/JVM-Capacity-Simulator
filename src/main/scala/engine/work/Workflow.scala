@@ -11,17 +11,25 @@ sealed trait Workflow extends Described:
   override val name: String
   override val description: String
   val workflowDef: WorkflowDef
-  val serviceProviders: Set[ServiceProvider]
-  
+  val defaultServiceProviders: Set[ServiceProvider]
+
+  def isValid:Boolean =
+    val chainsValid = workflowDef.parallelServices.forall(_.isValid)
+    transactionRate >= 0 && chainsValid
+
   def missingServiceProviders: List[String] =
     val allRequired = workflowDef.allRequiredServiceTypes
-    val configured = serviceProviders.map(sp => sp.service.serviceType).toSet
+    val configured = defaultServiceProviders.map(sp => sp.service.serviceType).toSet
     (allRequired -- configured).toList
+
+  def applyDefaultServiceProviders: Workflow
+
+  def updateServiceProviders(index: Int, serviceProviders: Set[ServiceProvider]): Workflow
     
   def createClientRequests(network:List[Connection], clock:Int): (ClientRequestGroup, List[ClientRequest]) =
     val group = ClientRequestGroup(clock, this)
     val requests = workflowDef.parallelServices.map(chain => {
-      val solution = ClientRequestSolution.create(chain, serviceProviders, network)
+      val solution = ClientRequestSolution.create(chain, defaultServiceProviders, network)
       ClientRequest(ClientRequest.nextName, "", clock, solution, group.id, false)
     })
     (group, requests)
@@ -39,17 +47,39 @@ sealed trait Workflow extends Described:
 
 case class UserWorkflow(name:String, description:String,
                         workflowDef: WorkflowDef,
-                        serviceProviders: Set[ServiceProvider],
+                        defaultServiceProviders: Set[ServiceProvider],
                         userCount: Int, productivity: Int) extends Workflow:
 
   override def transactionRate: Int = userCount * productivity * 60
+
+  override def applyDefaultServiceProviders: Workflow =
+    val updatedChains = workflowDef.parallelServices.map(_.copy(serviceProviders = defaultServiceProviders))
+    val wfd = workflowDef.copy(parallelServices = updatedChains)
+    this.copy(workflowDef = wfd)
+
+  override def updateServiceProviders(index: Int, serviceProviders: Set[ServiceProvider]): Workflow =
+    val wfd = workflowDef.updateServiceProviders(index, serviceProviders)
+    this.copy(workflowDef = wfd)
+
+
 end UserWorkflow
+
 
 case class TransactionalWorkflow(name:String, description:String,
                                  workflowDef: WorkflowDef,
-                                 serviceProviders: Set[ServiceProvider],
+                                 defaultServiceProviders: Set[ServiceProvider],
                                  tph: Int) extends Workflow:
 
   override def transactionRate: Int = tph
+
+  override def applyDefaultServiceProviders: Workflow =
+    val updatedChains = workflowDef.parallelServices.map(_.copy(serviceProviders = defaultServiceProviders))
+    val wfd = workflowDef.copy(parallelServices = updatedChains)
+    this.copy(workflowDef = wfd)
+
+  override def updateServiceProviders(index: Int, serviceProviders: Set[ServiceProvider]): Workflow =
+    val wfd = workflowDef.updateServiceProviders(index, serviceProviders)
+    this.copy(workflowDef = wfd)
+
 end TransactionalWorkflow
 

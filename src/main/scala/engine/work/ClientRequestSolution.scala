@@ -2,8 +2,7 @@ package ca.esri.capsim
 package engine.work
 
 import engine.compute.ServiceProvider
-
-import ca.esri.capsim.engine.network.Connection
+import engine.network.{Connection, Route}
 
 case class ClientRequestSolution(steps: List[ClientRequestSolutionStep]):
   def currentStep: Option[ClientRequestSolutionStep] = steps.headOption
@@ -18,46 +17,49 @@ object ClientRequestSolution:
              network:List[Connection]): ClientRequestSolution =
     // Starting at the head of the chain (client), stop at each
     // service provider, traversing the network between each
-    var sourceSP = serviceProviders.find(_.service.serviceType == chain.head.serviceType).get
+    var sourceSP = serviceProviders.find(_.service.serviceType == chain.steps.head.serviceType).get
     var sourceNode = sourceSP.handlerNode()
     var steps = List[ClientRequestSolutionStep](ClientRequestSolutionStep(
       serviceTimeCalculator = sourceNode, isResponse = false,
-      dataSize = chain.head.requestSizeKB, chatter = 0, // Zero chatter for compute nodes
-      serviceTime = chain.head.serviceTime))
+      dataSize = chain.steps.head.requestSizeKB, chatter = 0, // Zero chatter for compute nodes
+      serviceTime = chain.steps.head.serviceTime))
 
-    for i <- 1 until chain.length do
-      val destSP = serviceProviders.find(_.service.serviceType == chain(i).serviceType).get
+    for i <- 1 until chain.steps.length do
+      val destSP = chain.serviceProvider(i)
       val destNode = destSP.handlerNode()
-      val conn = network.find(conn => {
-        conn.sourceZone == sourceNode.zone && conn.destinationZone == destNode.zone
-      }).get
-      steps = ClientRequestSolutionStep(
-        serviceTimeCalculator = conn, isResponse = false,
-        dataSize = chain(i).requestSizeKB, chatter = chain(i).chatter,
-        serviceTime = 0) +: steps   // Service time is derived from data size for connection nodes
+      println(s"Finding connection between $sourceNode.zone} and $destNode.zone}")
+      val route = Route.findRoute(sourceNode.zone, destNode.zone, network)
+      assert(route.nonEmpty)
+      route.get.connections.foreach(connection => {
+        steps = ClientRequestSolutionStep(
+          serviceTimeCalculator = connection, isResponse = false,
+          dataSize = chain.steps(i).requestSizeKB, chatter = chain.steps(i).chatter,
+          serviceTime = 0) +: steps // Service time is derived from data size for connection nodes
+      })
       steps = ClientRequestSolutionStep(
         serviceTimeCalculator = destNode, isResponse = false,
-        dataSize = chain(i).requestSizeKB, chatter = 0, // Zero chatter for compute nodes
-        serviceTime = chain(i).serviceTime) +: steps 
+        dataSize = chain.steps(i).requestSizeKB, chatter = 0, // Zero chatter for compute nodes
+        serviceTime = chain.steps(i).serviceTime) +: steps 
       sourceSP = destSP
       sourceNode = destNode
 
     // Now, retrace our steps back to the client
-    val chainR = chain.reverse
-    for i <- 1 until chainR.length do
-      val destSP = serviceProviders.find(_.service.serviceType == chainR(i).serviceType).get
+    val chainStepsR = chain.steps.reverse
+    for i <- 1 until chainStepsR.length do
+      val destSP = serviceProviders.find(_.service.serviceType == chainStepsR(i).serviceType).get
       val destNode = destSP.handlerNode()
-      val conn = network.find(conn => {
-        conn.sourceZone == sourceNode.zone && conn.destinationZone == destNode.zone
-      }).get
-      steps = ClientRequestSolutionStep(
-        serviceTimeCalculator = conn, isResponse = true,
-        dataSize = chainR(i).responseSizeKB, chatter = chainR(i).chatter,
-        serviceTime = 0) +: steps
+      val route = Route.findRoute(sourceNode.zone, destNode.zone, network)
+      assert(route.nonEmpty)
+      route.get.connections.foreach(conn => {
+        steps = ClientRequestSolutionStep(
+          serviceTimeCalculator = conn, isResponse = true,
+          dataSize = chainStepsR(i).responseSizeKB, chatter = chainStepsR(i).chatter,
+          serviceTime = 0) +: steps
+      })
       steps = ClientRequestSolutionStep(
         serviceTimeCalculator = destNode, isResponse = true,
-        dataSize = chainR(i).responseSizeKB, chatter = 0,
-        serviceTime = chainR(i).serviceTime) +: steps
+        dataSize = chainStepsR(i).responseSizeKB, chatter = 0,
+        serviceTime = chainStepsR(i).serviceTime) +: steps
       sourceSP = destSP
       sourceNode = destNode
 

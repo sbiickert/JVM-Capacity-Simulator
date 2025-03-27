@@ -31,7 +31,12 @@ class Simulator(override val name:String, override val description:String) exten
     // TODO: Summarize stuff
 
   def nextEventTime:Option[Int] =
-    List(nextQEventTime, nextWFEventTime).min
+    val times = List(nextQEventTime, nextWFEventTime)
+    val nonNone = times.filter(_.isDefined)
+    if nonNone.isEmpty then
+      None
+    else
+      nonNone.min
 
   private def nextWFEventTime:Option[Int] =
     nextEventTimeForWorkflows.values.minOption
@@ -72,9 +77,10 @@ class Simulator(override val name:String, override val description:String) exten
         rList
       else
         val queue = getNextQueue
-        var rList = queue.removeFinishedRequests(q)
-        rList = rList.map(req => {
+        val requestsAndMetrics = queue.removeFinishedRequests(q)
+        val rList = requestsAndMetrics.map((req, metric) => {
           val updatedSolution = req.solution.gotoNextStep
+          metrics = metric +: metrics
           req.copy(solution = updatedSolution)
         })
         rList

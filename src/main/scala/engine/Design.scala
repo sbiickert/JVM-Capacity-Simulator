@@ -1,14 +1,11 @@
 package ca.esri.capsim
 package engine
 
-import ca.esri.capsim.engine.Design.updateWorkflowsWithUpdatedServiceProviders
-import ca.esri.capsim.engine.compute.{Client, ComputeNode, PhysicalHost, Service, ServiceProvider, VirtualHost}
-import ca.esri.capsim.engine.network.*
-import ca.esri.capsim.engine.queue.MultiQueue
-import ca.esri.capsim.engine.work.{TransactionalWorkflow, UserWorkflow, Workflow}
-
-import java.util.UUID
-import scala.collection.View.Updated
+import engine.Design.updateWorkflowsWithUpdatedServiceProviders
+import engine.compute.*
+import engine.network.*
+import engine.queue.MultiQueue
+import engine.work.{TransactionalWorkflow, UserWorkflow, Workflow}
 
 case class Design(name: String, description: String = "",
                   zones:List[Zone] = List(), 
@@ -19,8 +16,17 @@ case class Design(name: String, description: String = "",
                   workflows:List[Workflow] = List()) extends Described:
 
   def isValid:Boolean =
-    //TODO
-    false
+    val allServiceProvidersValid = serviceProviders.forall(_.isValid)
+    val allZonesAreConnected = zones.forall(_.isConnected(network))
+    val allWorkflowsValid = workflows.forall(_.isValid)
+    zones.nonEmpty
+      && network.nonEmpty
+      && computeNodes.nonEmpty
+      && workflows.nonEmpty
+      && services.nonEmpty
+      && allServiceProvidersValid
+      && allZonesAreConnected
+      && allWorkflowsValid
     
   // ----------------------------------------------------------------
   // Zone Management
@@ -266,6 +272,8 @@ case class Design(name: String, description: String = "",
   def addServiceProvider(sp:ServiceProvider): Design =
     if serviceProviders.contains(sp) then
       this
+    else if serviceProviders.exists(_.name == sp.name) then
+      this // Can't have two service providers with the same name.
     else
       val updatedSPs = sp +: serviceProviders
       this.copy(serviceProviders = updatedSPs)
@@ -363,12 +371,12 @@ object Design:
   def updateWorkflowsWithUpdatedServiceProviders(workflows:List[Workflow],
                                                  updatedSPs:List[ServiceProvider]):List[Workflow] =
     workflows.map(w => {
-      val uSPs = w.serviceProviders.flatMap(sp => {
+      val uSPs = w.defaultServiceProviders.flatMap(sp => {
         updatedSPs.find(_.name == sp.name)
       })
       w match
-        case uwf: UserWorkflow => uwf.copy(serviceProviders = uSPs)
-        case twf: TransactionalWorkflow => twf.copy(serviceProviders = uSPs)
+        case uwf: UserWorkflow => uwf.copy(defaultServiceProviders = uSPs)
+        case twf: TransactionalWorkflow => twf.copy(defaultServiceProviders = uSPs)
     })
 end Design
 

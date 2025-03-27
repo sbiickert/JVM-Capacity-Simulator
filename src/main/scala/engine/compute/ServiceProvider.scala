@@ -34,5 +34,9 @@ case class ServiceProvider(name:String, description:String,
         nodes.iterator.drop(i).next
       }
 
+  def isValid: Boolean =
+    val failoverNoPrimary = service.balancingModel == FAILOVER && primary.isEmpty
+    nodes.nonEmpty && !failoverNoPrimary
+    
 end ServiceProvider
 
