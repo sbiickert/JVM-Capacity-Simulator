@@ -1,21 +1,26 @@
 package ca.esri.capsim
 package engine.work
 
-import engine.Described
+import engine.{Described, Validatable, ValidationMessage}
 import engine.compute.ServiceProvider
 import engine.network.{Connection, Zone}
 
 import java.util.Random
 
-sealed trait Workflow extends Described:
+sealed trait Workflow extends Described, Validatable:
   override val name: String
   override val description: String
   val workflowDef: WorkflowDef
   val defaultServiceProviders: Set[ServiceProvider]
 
-  def isValid:Boolean =
+  override def validate: List[ValidationMessage] =
+    var eList = List[ValidationMessage]()
     val chainsValid = workflowDef.parallelServices.forall(_.isValid)
-    transactionRate >= 0 && chainsValid
+    if !chainsValid then
+      eList = ValidationMessage("One or more workflow chains is invalid", name) +: eList
+    if transactionRate < 0 then
+      eList = ValidationMessage("Transaction rate must be greater or equal to zero", name) +: eList
+    eList
 
   def missingServiceProviders: List[String] =
     val allRequired = workflowDef.allRequiredServiceTypes
@@ -29,7 +34,7 @@ sealed trait Workflow extends Described:
   def createClientRequests(network:List[Connection], clock:Int): (ClientRequestGroup, List[ClientRequest]) =
     val group = ClientRequestGroup(clock, this)
     val requests = workflowDef.parallelServices.map(chain => {
-      val solution = ClientRequestSolution.create(chain, defaultServiceProviders, network)
+      val solution = ClientRequestSolution.create(chain, network)
       ClientRequest(ClientRequest.nextName, "", clock, solution, group.id, false)
     })
     (group, requests)

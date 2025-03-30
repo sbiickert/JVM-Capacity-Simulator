@@ -13,20 +13,34 @@ case class Design(name: String, description: String = "",
                   computeNodes:List[ComputeNode] = List(),
                   services:Map[String, Service] = Map(),
                   serviceProviders:List[ServiceProvider] = List(),
-                  workflows:List[Workflow] = List()) extends Described:
+                  workflows:List[Workflow] = List())
+  extends Described, Validatable:
 
-  def isValid:Boolean =
+  override def validate: List[ValidationMessage] =
+    var eList = List[ValidationMessage]()
+
     val allServiceProvidersValid = serviceProviders.forall(_.isValid)
     val allZonesAreConnected = zones.forall(_.isConnected(network))
     val allWorkflowsValid = workflows.forall(_.isValid)
-    zones.nonEmpty
-      && network.nonEmpty
-      && computeNodes.nonEmpty
-      && workflows.nonEmpty
-      && services.nonEmpty
-      && allServiceProvidersValid
-      && allZonesAreConnected
-      && allWorkflowsValid
+
+    if !allServiceProvidersValid then
+      eList = ValidationMessage("One or more invalid service providers", name) +: eList
+    if !allZonesAreConnected then
+      eList = ValidationMessage("One or more zones are not connected", name) +: eList
+    if !allWorkflowsValid then
+      eList = ValidationMessage("One or more invalid workflows", name) +: eList
+    if zones.isEmpty then
+      eList = ValidationMessage("No network zones", name) +: eList
+    if network.isEmpty then
+      eList = ValidationMessage("No network connections", name) +: eList
+    if computeNodes.isEmpty then
+      eList = ValidationMessage("No compute nodes", name) +: eList
+    if workflows.isEmpty then
+      eList = ValidationMessage("No configured workflows", name) +: eList
+    if services.isEmpty then
+      eList = ValidationMessage("No configured services", name) +: eList
+
+    eList
     
   // ----------------------------------------------------------------
   // Zone Management

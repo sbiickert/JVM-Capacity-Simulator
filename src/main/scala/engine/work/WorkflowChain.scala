@@ -2,8 +2,11 @@ package ca.esri.capsim
 package engine.work
 
 import engine.compute.ServiceProvider
+import engine.{Described, Validatable, ValidationMessage}
 
-case class WorkflowChain(steps: List[WorkflowDefStep], serviceProviders: Set[ServiceProvider]):
+case class WorkflowChain(name: String, description: String,
+                         steps: List[WorkflowDefStep], serviceProviders: Set[ServiceProvider])
+  extends Described, Validatable:
   def allRequiredServiceTypes: Set[String] =
     steps.map(_.serviceType).toSet
 
@@ -12,14 +15,17 @@ case class WorkflowChain(steps: List[WorkflowDefStep], serviceProviders: Set[Ser
     val configured = serviceProviders.map(_.service.serviceType).toSet
     (allRequired -- configured).toList
 
-  def hasDuplicateServiceProviders: Boolean =
+  private def hasDuplicateServiceProviders: Boolean =
     val configured = serviceProviders.map(_.service.serviceType).toSet
     configured.size != serviceProviders.size // Duplicate service types will end up with a set smaller than
 
-  def isValid: Boolean =
-    val noDupes = !hasDuplicateServiceProviders 
-    val noMissing = missingServiceProviders.isEmpty
-    noDupes && noMissing
+  override def validate: List[ValidationMessage] =
+    var eList = List[ValidationMessage]()
+    if hasDuplicateServiceProviders then
+      eList = ValidationMessage("More than one service provider for a type", name) +: eList
+    if missingServiceProviders.nonEmpty then
+      eList = ValidationMessage("Missing one or more service providers", name) +: eList
+    eList
     
   def serviceProvider(index:Int): ServiceProvider =
     assert(index >= 0 && index < steps.size)

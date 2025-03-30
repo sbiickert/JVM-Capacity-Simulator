@@ -12,6 +12,7 @@ end QueueMetric
 
 
 case class RequestMetric(sourceName:String, clock: Int,
+                         requestName: String,
                          serviceTime:Int, queueTime:Int, latencyTime:Int) extends PerformanceMetric:
 
 end RequestMetric

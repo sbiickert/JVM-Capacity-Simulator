@@ -1,16 +1,16 @@
 package ca.esri.capsim
 package engine.compute
 
-import engine.Described
-
-import ca.esri.capsim.engine.compute.BalancingModel.*
+import engine.compute.BalancingModel.*
+import engine.{Described, Validatable, ValidationMessage}
 
 import scala.util.Random
 
 case class ServiceProvider(name:String, description:String,
                            service: Service,
                            primary: Option[ComputeNode],
-                           nodes: Set[ComputeNode]) extends Described:
+                           nodes: Set[ComputeNode]) 
+  extends Described, Validatable:
 
   def addNode(node: ComputeNode): ServiceProvider =
     if service.balancingModel == SINGLE && nodes.nonEmpty then
@@ -34,9 +34,14 @@ case class ServiceProvider(name:String, description:String,
         nodes.iterator.drop(i).next
       }
 
-  def isValid: Boolean =
+  override def validate: List[ValidationMessage] = 
+    var eList = List[ValidationMessage]()
     val failoverNoPrimary = service.balancingModel == FAILOVER && primary.isEmpty
-    nodes.nonEmpty && !failoverNoPrimary
-    
+    if failoverNoPrimary then
+      eList = ValidationMessage("Failover service type without primary node set", name) +: eList
+    if nodes.isEmpty then
+      eList = ValidationMessage("Service provider without any nodes", name) +: eList
+    eList
+  
 end ServiceProvider
 

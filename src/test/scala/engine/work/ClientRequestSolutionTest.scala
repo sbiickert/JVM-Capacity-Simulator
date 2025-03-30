@@ -20,8 +20,7 @@ end ClientRequestSolutionTest
 object ClientRequestSolutionTest:
   def sampleIntranetClientRequestSolution: ClientRequestSolution =
     ClientRequestSolution.create(
-      chain = WorkflowDefTest.sampleWebDynamicMapChain,
-      serviceProviders = ServiceProviderTest.sampleWebGISServiceProviders,
+      chain = WorkflowDefTest.sampleWebDynamicMapChain.copy(serviceProviders = ServiceProviderTest.sampleWebGISServiceProviders),
       network = RouteTest.sampleIntranet)
 end ClientRequestSolutionTest
 

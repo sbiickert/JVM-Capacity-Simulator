@@ -59,6 +59,7 @@ class MultiQueue(val serviceTimeCalculator: ServiceTimeCalculator,
       finishedRequests.addOne(
         wr.request,
         RequestMetric(sourceName = name, clock = clock,
+          requestName = wr.request.name,
           serviceTime = wr.serviceTime.get,
           queueTime = clock - wr.waitStart - wr.serviceTime.get - wr.latency.getOrElse(0),
           latencyTime = wr.latency.getOrElse(0)))

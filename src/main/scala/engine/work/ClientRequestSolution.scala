@@ -13,11 +13,10 @@ end ClientRequestSolution
 
 object ClientRequestSolution:
   def create(chain:WorkflowChain,
-             serviceProviders:Set[ServiceProvider],
              network:List[Connection]): ClientRequestSolution =
     // Starting at the head of the chain (client), stop at each
     // service provider, traversing the network between each
-    var sourceSP = serviceProviders.find(_.service.serviceType == chain.steps.head.serviceType).get
+    var sourceSP = chain.serviceProvider(chain.steps.head)
     var sourceNode = sourceSP.handlerNode()
     var steps = List[ClientRequestSolutionStep](ClientRequestSolutionStep(
       serviceTimeCalculator = sourceNode, isResponse = false,

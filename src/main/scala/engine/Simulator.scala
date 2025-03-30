@@ -9,7 +9,7 @@ import scala.collection.mutable
 class Simulator(override val name:String, override val description:String) extends Described:
   var design: Design = Design(Design.nextName())
   var clock: Int = 0
-  var isRunning: Boolean = false
+  var isGeneratingNewRequests: Boolean = false
   var finishedRequests:List[ClientRequest] = List[ClientRequest]()
   var queues:List[MultiQueue] = List[MultiQueue]()
   var nextEventTimeForWorkflows:mutable.Map[String, Int] = mutable.Map.empty
@@ -17,17 +17,17 @@ class Simulator(override val name:String, override val description:String) exten
 
   def start():Unit =
     if !design.isValid then
-      isRunning = false
+      isGeneratingNewRequests = false
     else
       reset()
+      isGeneratingNewRequests = true
 
       // Calculate next event time for all workflows
       for wf <- design.workflows do
         nextEventTimeForWorkflows(wf.name) = wf.calculateNextEventTime(clock)
-      isRunning = true
 
   def stop():Unit =
-    isRunning = false
+    isGeneratingNewRequests = false
     // TODO: Summarize stuff
 
   def nextEventTime:Option[Int] =
@@ -39,7 +39,10 @@ class Simulator(override val name:String, override val description:String) exten
       nonNone.min
 
   private def nextWFEventTime:Option[Int] =
-    nextEventTimeForWorkflows.values.minOption
+    if isGeneratingNewRequests then
+      nextEventTimeForWorkflows.values.minOption
+    else
+      None
 
   private def nextQEventTime:Option[Int] =
     queues.flatMap(_.nextEventTime).minOption
@@ -88,7 +91,7 @@ class Simulator(override val name:String, override val description:String) exten
     //Move request(s) on to their next step
     for req <- requests do
       if req.solution.currentStep.isEmpty then
-        finishedRequests = req +: finishedRequests
+        finishedRequests = req.copy(isFinished = true) +: finishedRequests
       else
         val stCalc = req.solution.currentStep.get.serviceTimeCalculator
         val queue = queues.find(_.serviceTimeCalculator == stCalc)

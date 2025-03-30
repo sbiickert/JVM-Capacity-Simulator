@@ -18,7 +18,8 @@ class WorkflowDefTest extends AnyFunSuite:
 
   test("addChain") {
     val original = sampleWebWorkflowDef
-    val overlay = WorkflowChain(steps = List(
+    val overlay = WorkflowChain(name = "Hosted Features", description = "", 
+      steps = List(
       sampleBrowserWorkflowService,
       sampleWebWorkflowService,
       samplePortalWorkflowService,
@@ -39,7 +40,8 @@ class WorkflowDefTest extends AnyFunSuite:
 
 object WorkflowDefTest:
   val sampleWebDynamicMapChain: WorkflowChain =
-    WorkflowChain(steps = List(
+    WorkflowChain(name = "Map Image", description = "", 
+      steps = List(
       sampleBrowserWorkflowService,
       sampleWebWorkflowService,
       samplePortalWorkflowService,
@@ -48,7 +50,8 @@ object WorkflowDefTest:
     ), serviceProviders = Set.empty)
     
   val sampleWebCachedMapChain: WorkflowChain =
-    WorkflowChain(steps = List(
+    WorkflowChain(name = "Basemap", description = "", 
+      steps = List(
       sampleBrowserWorkflowService,
       sampleWebWorkflowService,
       samplePortalWorkflowService,
@@ -57,10 +60,12 @@ object WorkflowDefTest:
     ), serviceProviders = Set.empty)
     
   val sampleProMapChain: WorkflowChain =
-    WorkflowChain(steps = List(sampleProWorkflowService, sampleDBMSWorkflowService), serviceProviders = Set.empty)
+    WorkflowChain(name = "Pro Edit", description = "", 
+      steps = List(sampleProWorkflowService, sampleDBMSWorkflowService), serviceProviders = Set.empty)
     
   val sampleProBasemap: WorkflowChain =
-    WorkflowChain(steps = List(
+    WorkflowChain(name = "Basemap", description = "", 
+      steps = List(
       sampleProWorkflowService,
       sampleWebWorkflowService,
       samplePortalWorkflowService,
@@ -82,5 +87,6 @@ object WorkflowDefTest:
 
   val sampleVDIWorkflowDef: WorkflowDef =
     WorkflowDef("Workflow Def 003", "Sample VDI Pro Work", 3, List(
-      WorkflowChain(steps = List(sampleVDIWorkflowService, sampleProWorkflowService, sampleDBMSWorkflowService), serviceProviders = Set.empty),
+      WorkflowChain(name = "VDI Pro Edit", description = "", 
+        steps = List(sampleVDIWorkflowService, sampleProWorkflowService, sampleDBMSWorkflowService), serviceProviders = Set.empty),
       sampleProBasemap ))
