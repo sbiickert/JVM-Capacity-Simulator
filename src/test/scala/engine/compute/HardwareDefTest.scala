@@ -22,10 +22,10 @@ class HardwareDefTest extends AnyFunSuite:
 
 object HardwareDefTest:
   val sampleMobileHWDef: HardwareDef =
-    HardwareDef("Mobile 001", "sample phone", "Apple Silicon M1", 8, 500, ARM64)
+    HardwareDef("Apple Silicon M1", 8, 500, ARM64)
 
   val sampleClientHWDef: HardwareDef =
-    HardwareDef("Client 001", "sample client", "Intel Core i7-4770K", 4, 20, INTEL)
+    HardwareDef("Intel Core i7-4770K", 4, 20, INTEL)
 
   val sampleServerHWDef: HardwareDef =
-    HardwareDef("Server 001", "sample server", "Xeon E5-2643v3", 12, 67, INTEL)
+    HardwareDef("Xeon E5-2643v3", 12, 67, INTEL)

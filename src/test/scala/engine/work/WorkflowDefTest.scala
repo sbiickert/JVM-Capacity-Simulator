@@ -10,10 +10,10 @@ class WorkflowDefTest extends AnyFunSuite:
   test("create") {
     val wf = sampleWebWorkflowDef
     assert(wf.thinkTime == 6)
-    assert(wf.parallelServices.length == 2)
-    assert(wf.parallelServices.head.steps(3).serviceType == "map")
-    assert(wf.parallelServices(1).steps(3).serviceType == "map")
-    assert(wf.parallelServices.head.steps(4).serviceType == "dbms")
+    assert(wf.parallelChains.length == 2)
+    assert(wf.parallelChains.head.steps(3).serviceType == "map")
+    assert(wf.parallelChains(1).steps(3).serviceType == "map")
+    assert(wf.parallelChains.head.steps(4).serviceType == "dbms")
   }
 
   test("addChain") {
@@ -27,15 +27,15 @@ class WorkflowDefTest extends AnyFunSuite:
       sampleRelationalWorkflowService
     ), serviceProviders = Set.empty)
     val withOverlay = original.addChain(overlay)
-    assert(withOverlay.parallelServices.length == 3)
-    assert(withOverlay.parallelServices.head.steps(4).serviceType == "relational")
+    assert(withOverlay.parallelChains.length == 3)
+    assert(withOverlay.parallelChains.head.steps(4).serviceType == "relational")
   }
 
   test("removeChain") {
     val original = sampleWebWorkflowDef
     val justBasemap = original.removeChain(0)
-    assert(justBasemap.parallelServices.length == 1)
-    assert(justBasemap.parallelServices.head.steps(4).serviceType == "file")
+    assert(justBasemap.parallelChains.length == 1)
+    assert(justBasemap.parallelChains.head.steps(4).serviceType == "file")
   }
 
 object WorkflowDefTest:

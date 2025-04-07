@@ -3,9 +3,8 @@ package engine.compute
 
 import ca.esri.capsim.engine.Described
 
-case class HardwareDef(name: String, description:String,
-                       processor: String, cores: Int, specIntRate2017: Double,
-                       architecture: ComputeArchitecture) extends Described:
+case class HardwareDef(processor: String, cores: Int, specIntRate2017: Double,
+                       architecture: ComputeArchitecture):
   val specIntRate2017PerCore: Double = specIntRate2017 / cores
 end HardwareDef
 
