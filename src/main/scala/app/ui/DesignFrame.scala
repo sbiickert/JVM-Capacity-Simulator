@@ -15,7 +15,7 @@ class DesignFrame(doc:DesignDoc) extends Frame:
   panel.layout(DesignStatusBar()) = BorderPanel.Position.South
   panel.layout(InspectorPanel()) = BorderPanel.Position.East
   contents = panel
-  
+
   minimumSize = Dimension(500,500)
   preferredSize = Dimension(1000, 500)
   pack()
