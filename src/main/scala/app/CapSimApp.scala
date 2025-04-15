@@ -1,7 +1,9 @@
 package ca.esri.capsim
 package app
 
+import ca.esri.capsim.app.doc.DesignDoc
 import ca.esri.capsim.app.ui.DesignFrame
+import ca.esri.capsim.engine.Design
 
 import scala.swing.MenuBar.NoMenuBar.contents
 import scala.swing.event.{ButtonClicked, WindowClosed, WindowClosing}
@@ -25,7 +27,7 @@ class CapSimApp extends SwingApplication:
     }
 
   def addFrame(): Frame =
-    val frame = DesignFrame()
+    val frame = DesignFrame(DesignDoc(Design.empty))
     frame.visible = true
     frames = frame +: frames
     app.listenTo(frame)
@@ -37,6 +39,8 @@ val app:CapSimApp = CapSimApp()
 
 @main def main(args: String*) =
   app.startup(args.toArray)
+  System.setProperty("apple.laf.useScreenMenuBar", "true")
+  System.setProperty("apple.awt.application.name", "Capacity Simulator")
   app.addFrame()
   app.addFrame()
 

@@ -370,7 +370,21 @@ object Design:
     _nextID += 1
     _nextID
   
-  def nextName(): String = s"Design $_nextID"
+  def nextName(): String =
+    val id = nextID()
+    s"Design $id"
+
+  def empty: Design =
+    Design(
+      name = nextName(),
+      description = "",
+      zones = List.empty,
+      network = List.empty,
+      computeNodes = List.empty,
+      services = Map.empty,
+      serviceProviders = List.empty,
+      workflows = List.empty
+    )
 
   /** Assumes that ComputeNode names are unique and unchanged. */
   def updateServiceProvidersWithUpdatedNodes(serviceProviders:List[ServiceProvider],

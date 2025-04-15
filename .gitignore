@@ -46,3 +46,4 @@ build/
 ### Scala ###
 .bsp/
 /.idea
+graphics/*@3x.png
